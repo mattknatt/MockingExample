@@ -1,5 +1,6 @@
 package com.example;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,6 +20,11 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+/**
+ * Unit tests for the {@link BookingSystem} class.
+ * This class tests the booking logic, availability checks, and cancellation process.
+ */
+@DisplayName("Booking System Tests")
 @ExtendWith(MockitoExtension.class)
 class BookingSystemTest {
 
@@ -63,6 +69,10 @@ class BookingSystemTest {
 
     }
 
+    /**
+     * Verifies that booking fails when any of the required parameters (roomID, startTime, endTime) are null.
+     */
+    @DisplayName("Book room: Null parameters should throw IllegalArgumentException")
     @ParameterizedTest
     @MethodSource("bookRoom_nullParameters")
     void nullParametersShouldThrowException(String roomId, LocalDateTime startTime, LocalDateTime endTime) {
@@ -73,6 +83,10 @@ class BookingSystemTest {
 
     }
 
+    /**
+     * Verifies that booking fails if the requested start time is in the past.
+     */
+    @DisplayName("Book room: Start time in the past should throw IllegalArgumentException")
     @Test
     void bookRoom_shouldThrowExceptionIfStartTime_isBeforeCurrentTime() {
 
@@ -84,6 +98,10 @@ class BookingSystemTest {
 
     }
 
+    /**
+     * Verifies that booking fails if the end time is before the start time.
+     */
+    @DisplayName("Book room: End time before start time should throw IllegalArgumentException")
     @Test
     void bookRoom_shouldThrowExceptionIfEndTime_isBeforeStartTime() {
 
@@ -95,6 +113,10 @@ class BookingSystemTest {
 
     }
 
+    /**
+     * Verifies that booking fails if the room does not exist in the repository.
+     */
+    @DisplayName("Book room: Non-existent room should throw IllegalArgumentException")
     @Test
     void bookRoom_shouldThrowExceptionIfRoom_doesNotExist() {
 
@@ -106,6 +128,10 @@ class BookingSystemTest {
                 .hasMessage("Rummet existerar inte");
     }
 
+    /**
+     * Verifies that booking returns false if the room is already booked for the requested period.
+     */
+    @DisplayName("Book room: Should return false if room is not available")
     @Test
     void bookRoom_returnsFalseIfRoomIsNotAvailable() {
         Mockito.when(timeProvider.getCurrentTime()).thenReturn(CURRENT_TIME);
@@ -118,6 +144,10 @@ class BookingSystemTest {
 
     }
 
+    /**
+     * Verifies that a booking is successfully created and saved when the room is available.
+     */
+    @DisplayName("Book room: Should successfully add booking when room is available")
     @Test
     void bookRoom_addsBookingAndSavesRoom_whenAvailable() {
         Mockito.when(timeProvider.getCurrentTime()).thenReturn(CURRENT_TIME);
@@ -131,6 +161,11 @@ class BookingSystemTest {
         Mockito.verify(roomRepository).save(room);
     }
 
+    /**
+     * Verifies that the booking is successful even if the notification service fails.
+     * The system should be resilient to notification failures.
+     */
+    @DisplayName("Book room: Should return true even if notification fails")
     @Test
     void bookRoom_shouldReturnTrue_evenIfNotificationFails() throws NotificationException {
         Mockito.when(timeProvider.getCurrentTime()).thenReturn(CURRENT_TIME);
@@ -147,6 +182,10 @@ class BookingSystemTest {
 
     }
 
+    /**
+     * Verifies that getAvailableRooms fails when start or end time is null.
+     */
+    @DisplayName("Get available rooms: Null parameters should throw IllegalArgumentException")
     @ParameterizedTest
     @MethodSource("getAvailableRooms_nullParameters")
     void getAvailableRooms_nullParametersThrowsException(LocalDateTime startTime, LocalDateTime endTime) {
@@ -156,6 +195,10 @@ class BookingSystemTest {
                 .hasMessage("Måste ange både start- och sluttid");
     }
 
+    /**
+     * Verifies that getAvailableRooms fails if the end time is before the start time.
+     */
+    @DisplayName("Get available rooms: End time before start time should throw IllegalArgumentException")
     @Test
     void getAvailableRooms_endTimeBeforeStartTime_ThrowsException() {
 
@@ -165,6 +208,10 @@ class BookingSystemTest {
 
     }
 
+    /**
+     * Verifies that getAvailableRooms returns only the rooms that are available for the specified time period.
+     */
+    @DisplayName("Get available rooms: Should return only available rooms")
     @Test
     void getAvailableRooms_returnsOnlyAvailableRooms() {
         Room availableRoom = Mockito.mock(Room.class);
@@ -179,6 +226,10 @@ class BookingSystemTest {
         assertThat(result).containsExactly(availableRoom);
     }
 
+    /**
+     * Verifies that cancelling a booking fails if the booking ID is null.
+     */
+    @DisplayName("Cancel booking: Null booking ID should throw IllegalArgumentException")
     @Test
     void cancelBooking_throwsException_ifBookingIdIsNull() {
 
@@ -188,6 +239,10 @@ class BookingSystemTest {
 
     }
 
+    /**
+     * Verifies that cancelBooking returns false if no room is found that contains the specified booking ID.
+     */
+    @DisplayName("Cancel booking: Should return false if booking ID is not found")
     @Test
     void cancelBooking_returnsFalse_ifNoRoomWithBooking() {
 
@@ -200,6 +255,10 @@ class BookingSystemTest {
 
     }
 
+    /**
+     * Verifies that cancelling a booking fails if the booking has already started or finished.
+     */
+    @DisplayName("Cancel booking: Cannot cancel booking that has already started")
     @Test
     void cancelBooking_throwsException_ifStartTime_isBeforeCurrentTime() {
 
@@ -215,6 +274,10 @@ class BookingSystemTest {
                 .hasMessage("Kan inte avboka påbörjad eller avslutad bokning");
     }
 
+    /**
+     * Verifies that a booking is successfully removed from the room when canceled.
+     */
+    @DisplayName("Cancel booking: Should successfully remove booking")
     @Test
     void cancelBooking_removesBooking() {
 
