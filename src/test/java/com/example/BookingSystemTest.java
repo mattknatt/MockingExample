@@ -23,9 +23,8 @@ public class BookingSystemTest {
 
     private static final String ROOM_ID = "1";
     private static final LocalDateTime CURRENT_TIME = LocalDateTime.of(2026, 1, 28, 12, 0);
-    private static final LocalDateTime START_TIME = LocalDateTime.of(2026, 1, 28, 15, 0);
-    private static final LocalDateTime END_TIME = LocalDateTime.of(2026, 1, 28, 16, 0);
-
+    private static final LocalDateTime START_TIME = CURRENT_TIME.plusHours(1);
+    private static final LocalDateTime END_TIME = CURRENT_TIME.plusHours(3);
     @Mock TimeProvider timeProvider;
     @Mock RoomRepository roomRepository;
     @Mock NotificationService notificationService;
@@ -35,9 +34,14 @@ public class BookingSystemTest {
 
     private static Stream<Arguments> nullParamsRoomProvider() {
         return Stream.of(
+                Arguments.of(null, START_TIME, END_TIME),
+                Arguments.of(ROOM_ID, null, null),
                 Arguments.of(ROOM_ID, START_TIME, null),
                 Arguments.of(ROOM_ID, null, END_TIME),
-                Arguments.of(null, START_TIME, END_TIME));
+                Arguments.of(null , null, null),
+                Arguments.of(null, START_TIME, null),
+                Arguments.of(null, null, END_TIME));
+
     }
 
     @BeforeEach
@@ -52,6 +56,17 @@ public class BookingSystemTest {
         assertThatThrownBy(()->bookingSystem.bookRoom(roomId, startTime, endTime))
         .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Bokning kräver giltiga start- och sluttider samt rum-id");
+
+    }
+
+    @Test
+    void bookRoom_shouldThrowExceptionIfStartTime_isBeforeCurrentTime() {
+
+        Mockito.when(timeProvider.getCurrentTime()).thenReturn(CURRENT_TIME);
+
+        assertThatThrownBy(()->bookingSystem.bookRoom(ROOM_ID, CURRENT_TIME.minusHours(1), END_TIME))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Kan inte boka tid i dåtid");
 
     }
 
