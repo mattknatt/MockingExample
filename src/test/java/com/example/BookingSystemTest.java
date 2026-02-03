@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -18,12 +17,11 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class BookingSystemTest {
 
-    private static final String ROOM_ID = "1";
+    private static final String ROOM_ID = "room_id";
     private static final LocalDateTime CURRENT_TIME = LocalDateTime.of(2026, 1, 28, 12, 0);
     private static final LocalDateTime START_TIME = CURRENT_TIME.plusHours(1);
     private static final LocalDateTime END_TIME = CURRENT_TIME.plusHours(3);
@@ -97,6 +95,47 @@ class BookingSystemTest {
 
         assertThatThrownBy(() -> bookingSystem.bookRoom(ROOM_ID, START_TIME, END_TIME)).isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Rummet existerar inte");
+    }
+
+    @Test
+    void bookRoom_returnsFalseIfRoomIsNotAvailable() {
+        Mockito.when(timeProvider.getCurrentTime()).thenReturn(CURRENT_TIME);
+
+        Mockito.when(roomRepository.findById(ROOM_ID)).thenReturn(Optional.of(room));
+
+        Mockito.when(room.isAvailable(START_TIME, END_TIME)).thenReturn(false);
+
+        assertThat(bookingSystem.bookRoom(ROOM_ID, START_TIME, END_TIME)).isFalse();
+
+    }
+
+    @Test
+    void bookRoom_addsBookingAndSavesRoom_whenAvailable() {
+        Mockito.when(timeProvider.getCurrentTime()).thenReturn(CURRENT_TIME);
+        Mockito.when(roomRepository.findById(ROOM_ID)).thenReturn(Optional.of(room));
+        Mockito.when(room.isAvailable(START_TIME, END_TIME)).thenReturn(true);
+
+        boolean result = bookingSystem.bookRoom(ROOM_ID, START_TIME, END_TIME);
+
+        assertThat(result).isTrue();
+        Mockito.verify(room).addBooking(Mockito.any(Booking.class));
+        Mockito.verify(roomRepository).save(room);
+    }
+
+    @Test
+    void bookRoom_shouldReturnTrue_evenIfNotificationFails() throws NotificationException {
+        Mockito.when(timeProvider.getCurrentTime()).thenReturn(CURRENT_TIME);
+        Mockito.when(roomRepository.findById(ROOM_ID)).thenReturn(Optional.of(room));
+        Mockito.when(room.isAvailable(START_TIME, END_TIME)).thenReturn(true);
+        Mockito.doThrow(new NotificationException("Notification failed")).when(notificationService).sendBookingConfirmation(Mockito.any(Booking.class));
+
+        boolean result = bookingSystem.bookRoom(ROOM_ID, START_TIME, END_TIME);
+
+        assertThat(result).isTrue();
+        Mockito.verify(room).addBooking(Mockito.any(Booking.class));
+        Mockito.verify(roomRepository).save(room);
+        Mockito.verify(notificationService).sendBookingConfirmation(Mockito.any(Booking.class));
+
     }
 
 
