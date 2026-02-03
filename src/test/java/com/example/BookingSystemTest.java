@@ -11,6 +11,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.awt.print.Book;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -218,6 +219,14 @@ class BookingSystemTest {
     @Test
     void cancelBooking_removesBooking() {
 
+        Booking booking = new Booking(BOOKING_ID, ROOM_ID, START_TIME, END_TIME);
+        Mockito.when(timeProvider.getCurrentTime()).thenReturn(CURRENT_TIME);
+        Mockito.when(roomRepository.findAll()).thenReturn(List.of(room));
+        Mockito.when(room.hasBooking(BOOKING_ID)).thenReturn(true);
+        Mockito.when(room.getBooking(BOOKING_ID)).thenReturn(booking);
+
+        bookingSystem.cancelBooking(BOOKING_ID);
+        Mockito.verify(room).removeBooking(BOOKING_ID);
 
     }
 }
