@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class BookingSystemTest {
 
     private static final String ROOM_ID = "room_id";
+    private static final String BOOKING_ID = "booking_id";
     private static final LocalDateTime CURRENT_TIME = LocalDateTime.of(2026, 1, 28, 12, 0);
     private static final LocalDateTime START_TIME = CURRENT_TIME.plusHours(1);
     private static final LocalDateTime END_TIME = CURRENT_TIME.plusHours(3);
@@ -177,4 +178,47 @@ class BookingSystemTest {
 
         assertThat(result).containsExactly(availableRoom);
     }
+
+    @Test
+    void cancelBooking_throwsException_ifBookingIdIsNull() {
+
+        assertThatThrownBy(() -> bookingSystem.cancelBooking(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Boknings-id kan inte vara null");
+
+    }
+
+    @Test
+    void cancelBooking_returnsFalse_ifNoRoomWithBooking() {
+
+        Mockito.when(roomRepository.findAll()).thenReturn(List.of(room));
+        Mockito.when(room.hasBooking(BOOKING_ID)).thenReturn(false);
+
+        boolean result = bookingSystem.cancelBooking(BOOKING_ID);
+
+        assertThat(result).isFalse();
+
+    }
+
+    @Test
+    void cancelBooking_throwsException_ifStartTime_isBeforeCurrentTime() {
+
+        Mockito.when(timeProvider.getCurrentTime()).thenReturn(CURRENT_TIME);
+
+        Booking booking = new Booking(BOOKING_ID, ROOM_ID, CURRENT_TIME.minusHours(1), END_TIME);
+        Mockito.when(roomRepository.findAll()).thenReturn(List.of(room));
+        Mockito.when(room.hasBooking(BOOKING_ID)).thenReturn(true);
+        Mockito.when(room.getBooking(BOOKING_ID)).thenReturn(booking);
+
+        assertThatThrownBy(() -> bookingSystem.cancelBooking(BOOKING_ID))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Kan inte avboka påbörjad eller avslutad bokning");
+    }
+
+    @Test
+    void cancelBooking_removesBooking() {
+
+
+    }
 }
+
