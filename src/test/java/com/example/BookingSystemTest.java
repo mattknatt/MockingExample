@@ -12,6 +12,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -37,7 +38,7 @@ class BookingSystemTest {
     @InjectMocks
     BookingSystem bookingSystem;
 
-    private static Stream<Arguments> nullParamsRoomProvider() {
+    private static Stream<Arguments> bookRoom_nullParameters() {
         return Stream.of(
                 Arguments.of(null, START_TIME, END_TIME),
                 Arguments.of(ROOM_ID, null, null),
@@ -49,13 +50,20 @@ class BookingSystemTest {
 
     }
 
+    public static Stream<Arguments> getAvailableRooms_nullParameters() {
+        return Stream.of(
+                Arguments.of(START_TIME, null),
+                Arguments.of(null, END_TIME),
+                Arguments.of(null, null));
+    }
+
     @BeforeEach
     void setUp() {
 
     }
 
     @ParameterizedTest
-    @MethodSource("nullParamsRoomProvider")
+    @MethodSource("bookRoom_nullParameters")
     void nullParametersShouldThrowException(String roomId, LocalDateTime startTime, LocalDateTime endTime) {
 
         assertThatThrownBy(() -> bookingSystem.bookRoom(roomId, startTime, endTime))
@@ -138,5 +146,35 @@ class BookingSystemTest {
 
     }
 
+    @ParameterizedTest
+    @MethodSource("getAvailableRooms_nullParameters")
+    void getAvailableRooms_nullParametersThrowsException(LocalDateTime startTime, LocalDateTime endTime) {
 
+        assertThatThrownBy(() -> bookingSystem.getAvailableRooms(startTime, endTime))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Måste ange både start- och sluttid");
+    }
+
+    @Test
+    void getAvailableRooms_endTimeBeforeStartTime_ThrowsException() {
+
+        assertThatThrownBy(() -> bookingSystem.getAvailableRooms(START_TIME, START_TIME.minusHours(1)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Sluttid måste vara efter starttid");
+
+    }
+
+    @Test
+    void getAvailableRooms_returnsOnlyAvailableRooms() {
+        Room availableRoom = Mockito.mock(Room.class);
+        Room unavailableRoom = Mockito.mock(Room.class);
+
+        Mockito.when(roomRepository.findAll()).thenReturn(List.of(availableRoom, unavailableRoom));
+        Mockito.when(availableRoom.isAvailable(START_TIME, END_TIME)).thenReturn(true);
+        Mockito.when(unavailableRoom.isAvailable(START_TIME, END_TIME)).thenReturn(false);
+
+        List<Room> result = bookingSystem.getAvailableRooms(START_TIME, END_TIME);
+
+        assertThat(result).containsExactly(availableRoom);
+    }
 }
