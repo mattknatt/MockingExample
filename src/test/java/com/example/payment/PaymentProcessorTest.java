@@ -21,8 +21,6 @@ class PaymentProcessorTest {
     @Mock
     private PaymentRepository paymentRepository;
     @Mock
-    private PaymentCredentials paymentCredentials;
-    @Mock
     private EmailService emailService;
 
     @InjectMocks
