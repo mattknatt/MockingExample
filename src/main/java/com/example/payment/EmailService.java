@@ -1,6 +1,7 @@
 package com.example.payment;
 
+import com.example.NotificationException;
+
 public interface EmailService {
-    static void sendPaymentConfirmation(String mail, double amount) {
-    }
+    void sendPaymentConfirmation(String email, double amount) throws NotificationException;
 }
