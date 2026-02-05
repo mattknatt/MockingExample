@@ -19,4 +19,11 @@ public class ShoppingCart {
         return items;
     }
 
+    public double calculateTotalPrice(List<Item> items) {
+        double totalPrice = 0;
+        for( Item item : items) {
+            totalPrice += item.getPrice();
+        }
+        return totalPrice;
+    }
 }
