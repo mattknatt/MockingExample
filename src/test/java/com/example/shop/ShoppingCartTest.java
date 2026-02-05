@@ -2,10 +2,13 @@ package com.example.shop;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 
 class ShoppingCartTest {
@@ -91,7 +94,9 @@ class ShoppingCartTest {
 
         assertThat(updatedPrice).isEqualTo(originalPrice + expectedIncrease);
 
-    } @Test
+    }
+
+    @Test
     void updateQuantity_shouldDecreaseTotalPriceInCart_whenDecreasedQuantity() {
         List<Item> cartItems = cart.getItems();
         Item item = cartItems.getFirst();
@@ -104,6 +109,17 @@ class ShoppingCartTest {
 
 
         assertThat(updatedPrice).isEqualTo(originalPrice - expectedDecrease);
+
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {0, -1, -100})
+    void updateQuantity_shouldThrowException_whenQuantityZeroOrNegative (int quantity) {
+        Item item = cart.getItems().getFirst();
+
+       assertThatThrownBy(() -> cart.updateQuantity(item, quantity))
+               .isInstanceOf(IllegalArgumentException.class)
+               .hasMessage("Quantity must be greater than 0");
 
     }
 

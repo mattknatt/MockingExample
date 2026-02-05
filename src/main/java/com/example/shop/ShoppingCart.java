@@ -29,6 +29,9 @@ public class ShoppingCart {
     }
 
     public void updateQuantity(Item item, int quantity) {
+        if (quantity <= 0)
+            throw new IllegalArgumentException("Quantity must be greater than 0");
+
         item.setQuantity(quantity);
     }
 }
