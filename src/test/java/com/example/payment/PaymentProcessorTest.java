@@ -22,6 +22,8 @@ class PaymentProcessorTest {
     private PaymentRepository paymentRepository;
     @Mock
     private EmailService emailService;
+    @Mock
+    private PaymentCredentials paymentCredentials;
 
     @InjectMocks
     PaymentProcessor paymentProcessor;
@@ -31,7 +33,7 @@ class PaymentProcessorTest {
      * Verifies that an IllegalArgumentException is thrown if the payment amount is negative.
      */
     @Test
-    @DisplayName("Process payment: Negative amount should throw IllegalArgumentException")
+    @DisplayName("Negative amount should throw IllegalArgumentException")
     void shouldThrowException_ifAmountIsNegative() {
         double amount = -0.5;
 

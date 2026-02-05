@@ -22,6 +22,7 @@ public class PaymentProcessor {
         }
 
         PaymentApiResponse response;
+
         try {
             response = paymentApi.charge(paymentCredentials.getApiKey(), amount);
         } catch (RuntimeException e) {
@@ -35,6 +36,7 @@ public class PaymentProcessor {
             try {
                 emailService.sendPaymentConfirmation(paymentCredentials.getEmailAddress(), amount);
             } catch (NotificationException e) {
+                // Continues even if notification fails
             }
 
             return true;
