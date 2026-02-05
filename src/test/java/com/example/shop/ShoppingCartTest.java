@@ -17,4 +17,16 @@ class ShoppingCartTest {
 
     }
 
+    @Test
+    void removeItem_shouldRemoveItemFromCart() {
+        ShoppingCart cart = new ShoppingCart();
+        Item item = new Item();
+        cart.addItem(item);
+
+        cart.removeItem(item);
+
+        assertThat(cart.getItems()).doesNotContain(item);
+
+    }
+
 }
