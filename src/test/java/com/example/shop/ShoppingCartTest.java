@@ -1,82 +1,109 @@
 package com.example.shop;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 
 class ShoppingCartTest {
-    
+
+    private ShoppingCart cart;
+    private Item item1;
+    private Item item2;
+    private Item item3;
+
+
+    @BeforeEach
+    void setUp() {
+        cart = new ShoppingCart();
+        item1 = new Item(10, 2);
+        item2 = new Item(150, 4);
+        item3 = new Item(100, 3);
+        cart.addItem(item1);
+        cart.addItem(item2);
+        cart.addItem(item3);
+    }
+
     @Test
     void addItem_shouldSaveItemToCart() {
-        ShoppingCart cart = new ShoppingCart();
-        Item item = new Item();
+        Item newItem = new Item();
 
-        cart.addItem(item);
+        cart.addItem(newItem);
 
-        assertThat(cart.getItems()).contains(item);
+        assertThat(cart.getItems()).contains(newItem);
 
     }
 
     @Test
     void removeItem_shouldRemoveItemFromCart() {
-        ShoppingCart cart = new ShoppingCart();
-        Item item = new Item();
-        cart.addItem(item);
+        cart.removeItem(item1);
 
-        cart.removeItem(item);
-
-        assertThat(cart.getItems()).doesNotContain(item);
-
+        assertThat(cart.getItems()).doesNotContain(item1);
     }
-    
+
     @Test
     void calculateTotalPrice_shouldReturnPriceOfAllAddedItems() {
-        ShoppingCart cart = new ShoppingCart();
-        Item item1 = new Item(15.0);
-        Item item2 = new Item(100.0);
-        Item item3 = new Item(210.95);
-        cart.addItem(item1);
-        cart.addItem(item2);
-        cart.addItem(item3);
 
         double totalPrice = cart.calculateTotalPrice(cart.getItems());
 
-        assertThat(totalPrice).isEqualTo(item1.getPrice() +  item2.getPrice() + item3.getPrice());
+        assertThat(totalPrice).isEqualTo(
+                item1.getPrice() * item1.getQuantity()
+                        + item2.getPrice() * item2.getQuantity()
+                        + item3.getPrice() * item3.getQuantity());
 
     }
-    
+
     @Test
     void applyItemDiscount_returnsDiscountedPrice() {
         Discount discount = new DiscountCalculator();
         double discountPercentage = 0.01;
-        Item item = new Item(15.0);
 
-        double newPrice = discount.apply(item.getPrice(),  discountPercentage);
+        double newPrice = discount.apply(item1.getPrice(), discountPercentage);
 
-        assertThat(newPrice).isEqualTo(item.getPrice() - (item.getPrice()) * discountPercentage);
-        
+        assertThat(newPrice).isEqualTo(item1.getPrice() - (item1.getPrice()) * discountPercentage);
     }
 
     @Test
     void applyCartDiscount_returnsDiscountedPrice_ofItemsInCart() {
         Discount discount = new DiscountCalculator();
-        ShoppingCart cart = new ShoppingCart();
-        Item item1 = new Item(15.0);
-        Item item2 = new Item(100.0);
-        Item item3 = new Item(210.95);
-        cart.addItem(item1);
-        cart.addItem(item2);
-        cart.addItem(item3);
         double totalPrice = cart.calculateTotalPrice(cart.getItems());
         double discountPercentage = 0.01;
-
 
         double discountedCartPrice = discount.apply(totalPrice, discountPercentage);
 
         assertThat(discountedCartPrice).isEqualTo(totalPrice - (totalPrice * discountPercentage));
+    }
+
+    @Test
+    void updateQuantity_shouldIncreaseTotalPriceInCart_whenIncreasedQuantity() {
+        List<Item> cartItems = cart.getItems();
+        Item item = cartItems.getFirst();
+        int quantity = 2;
+        double originalPrice = cart.calculateTotalPrice(cartItems);
+
+        double expectedIncrease = item.getPrice() * quantity;
+        cart.updateQuantity(item, item.getQuantity() + quantity);
+        double updatedPrice = cart.calculateTotalPrice(cartItems);
 
 
+        assertThat(updatedPrice).isEqualTo(originalPrice + expectedIncrease);
 
+    } @Test
+    void updateQuantity_shouldDecreaseTotalPriceInCart_whenDecreasedQuantity() {
+        List<Item> cartItems = cart.getItems();
+        Item item = cartItems.getFirst();
+        int quantity = 1;
+        double originalPrice = cart.calculateTotalPrice(cartItems);
+
+        double expectedDecrease = item.getPrice() * quantity;
+        cart.updateQuantity(item, item.getQuantity() - quantity);
+        double updatedPrice = cart.calculateTotalPrice(cartItems);
+
+
+        assertThat(updatedPrice).isEqualTo(originalPrice - expectedDecrease);
 
     }
 

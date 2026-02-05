@@ -22,8 +22,13 @@ public class ShoppingCart {
     public double calculateTotalPrice(List<Item> items) {
         double totalPrice = 0;
         for( Item item : items) {
-            totalPrice += item.getPrice();
+
+            totalPrice += (item.getPrice() *  item.getQuantity());
         }
         return totalPrice;
+    }
+
+    public void updateQuantity(Item item, int quantity) {
+        item.setQuantity(quantity);
     }
 }
