@@ -47,7 +47,7 @@ class ShoppingCartTest {
     
     @Test
     void applyItemDiscount_returnsDiscountedPrice() {
-        Discount discount = new ItemDiscount();
+        Discount discount = new DiscountCalculator();
         double discountPercentage = 0.01;
         Item item = new Item(15.0);
 
@@ -55,6 +55,29 @@ class ShoppingCartTest {
 
         assertThat(newPrice).isEqualTo(item.getPrice() - (item.getPrice()) * discountPercentage);
         
+    }
+
+    @Test
+    void applyCartDiscount_returnsDiscountedPrice_ofItemsInCart() {
+        Discount discount = new DiscountCalculator();
+        ShoppingCart cart = new ShoppingCart();
+        Item item1 = new Item(15.0);
+        Item item2 = new Item(100.0);
+        Item item3 = new Item(210.95);
+        cart.addItem(item1);
+        cart.addItem(item2);
+        cart.addItem(item3);
+        double totalPrice = cart.calculateTotalPrice(cart.getItems());
+        double discountPercentage = 0.01;
+
+
+        double discountedCartPrice = discount.apply(totalPrice, discountPercentage);
+
+        assertThat(discountedCartPrice).isEqualTo(totalPrice - (totalPrice * discountPercentage));
+
+
+
+
     }
 
 }
