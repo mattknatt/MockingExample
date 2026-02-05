@@ -3,15 +3,13 @@ package com.example.shop;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class ShoppingCart {
     public List<Item> items = new ArrayList<>();
 
     public void addItem(Item item) {
-        if(item == null) {
-            throw new IllegalArgumentException("Item cannot be null");
-        }
-
+        Objects.requireNonNull(item, "Item cannot be null");
         if (!items.contains(item)) {
             items.add(item);
         } else {
@@ -20,10 +18,7 @@ public class ShoppingCart {
     }
 
     public void removeItem(Item item) {
-        if(item == null) {
-            throw new IllegalArgumentException("Item cannot be null");
-        }
-
+        Objects.requireNonNull(item, "Item cannot be null");
         if (!items.contains(item)) {
             return;
         }
@@ -36,17 +31,15 @@ public class ShoppingCart {
 
     public double calculateTotalPrice(List<Item> items) {
         double totalPrice = 0;
-        for( Item item : items) {
+        for (Item item : items) {
 
-            totalPrice += (item.getPrice() *  item.getQuantity());
+            totalPrice += (item.getPrice() * item.getQuantity());
         }
         return totalPrice;
     }
 
     public void updateQuantity(Item item, int quantity) {
-        if(item == null) {
-            throw new IllegalArgumentException("Item cannot be null");
-        }
+        Objects.requireNonNull(item, "Item cannot be null");
         if (quantity <= 0)
             throw new IllegalArgumentException("Quantity must be greater than 0");
 

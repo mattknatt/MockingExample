@@ -41,6 +41,15 @@ class ShoppingCartTest {
     }
 
     @Test
+    void addItem_shouldThrowNPE_ifItemIsNull() {
+
+        assertThatThrownBy(() -> cart.addItem(null))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("Item cannot be null");
+
+    }
+
+    @Test
     void addItem_shouldIncreaseQuantity_ifItemAlreadyInCart() {
         ShoppingCart newCart = new ShoppingCart();
         Item newItem = new Item(159, 1);
@@ -68,6 +77,13 @@ class ShoppingCartTest {
         cart.removeItem(newItem);
 
         assertThat(cart.getItems()).hasSameSizeAs(beforeChange).containsExactlyElementsOf(beforeChange);
+    }
+
+    @Test
+    void removeItem_shouldThrowNPE_ifItemIsNull() {
+        assertThatThrownBy(() -> cart.removeItem(null))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("Item cannot be null");
     }
 
     @Test
@@ -144,13 +160,21 @@ class ShoppingCartTest {
 
     @ParameterizedTest
     @ValueSource(ints = {0, -1, -100})
-    void updateQuantity_shouldThrowException_whenQuantityZeroOrNegative (int quantity) {
+    void updateQuantity_shouldThrowException_whenQuantityZeroOrNegative(int quantity) {
         Item item = cart.getItems().getFirst();
 
-       assertThatThrownBy(() -> cart.updateQuantity(item, quantity))
-               .isInstanceOf(IllegalArgumentException.class)
-               .hasMessage("Quantity must be greater than 0");
+        assertThatThrownBy(() -> cart.updateQuantity(item, quantity))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Quantity must be greater than 0");
 
     }
 
+    @Test
+    void updateQuantity_shouldThrowNPE_ifItemIsNull() {
+
+        assertThatThrownBy(() -> cart.updateQuantity(null, 2))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("Item cannot be null");
+
+    }
 }
