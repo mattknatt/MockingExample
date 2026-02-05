@@ -1,23 +1,49 @@
 package com.example.payment;
 
-//public class PaymentProcessor {
-//    private static final String API_KEY = "sk_test_123456";
-//
-//    public boolean processPayment(double amount) {
-//        // Anropar extern betaltjänst direkt med statisk API-nyckel
-//        PaymentApiResponse response = PaymentApi.charge(API_KEY, amount);
-//
-//        // Skriver till databas direkt
-//        if (response.isSuccess()) {
-//            DatabaseConnection.getInstance()
-//                    .executeUpdate("INSERT INTO payments (amount, status) VALUES (" + amount + ", 'SUCCESS')");
-//        }
-//
-//        // Skickar e-post direkt
-//        if (response.isSuccess()) {
-//            EmailService.sendPaymentConfirmation("user@example.com", amount);
-//        }
-//
-//        return response.isSuccess();
-//    }
-//}
+import com.example.NotificationException;
+
+public class PaymentProcessor {
+
+    private final PaymentApi paymentApi;
+    private final PaymentRepository paymentRepository;
+    private final PaymentCredentials paymentCredentials;
+    private final EmailService emailService;
+
+
+    public PaymentProcessor(PaymentApi paymentApi, PaymentRepository paymentRepository, PaymentCredentials paymentCredentials, EmailService emailService) {
+        this.paymentApi = paymentApi;
+        this.paymentRepository = paymentRepository;
+        this.paymentCredentials = paymentCredentials;
+        this.emailService = emailService;
+    }
+    public boolean processPayment(double amount) {
+        if(amount <= 0) {
+            throw new IllegalArgumentException("Amount must be positive");
+        }
+
+        PaymentApiResponse response;
+
+        try {
+            response = paymentApi.charge(paymentCredentials.getApiKey(), amount);
+        } catch (RuntimeException e) {
+            paymentRepository.save(amount, PaymentStatus.FAILURE.toString());
+            return false;
+        }
+
+        if (response.isSuccess()) {
+            paymentRepository.save(amount, PaymentStatus.SUCCESS.toString());
+
+            try {
+                emailService.sendPaymentConfirmation(paymentCredentials.getEmailAddress(), amount);
+            } catch (NotificationException e) {
+                // Continues even if notification fails
+            }
+
+            return true;
+        }
+        paymentRepository.save(amount, PaymentStatus.FAILURE.toString());
+        return false;
+    }
+}
+
+
