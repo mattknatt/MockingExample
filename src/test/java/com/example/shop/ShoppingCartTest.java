@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,7 +38,19 @@ class ShoppingCartTest {
         cart.addItem(newItem);
 
         assertThat(cart.getItems()).contains(newItem);
+    }
 
+    @Test
+    void addItem_shouldIncreaseQuantity_ifItemAlreadyInCart() {
+        ShoppingCart newCart = new ShoppingCart();
+        Item newItem = new Item(159, 1);
+        newCart.addItem(newItem);
+
+        newCart.addItem(newItem);
+
+        assertThat(newCart.getItems()).contains(newItem);
+        assertThat(newCart.getItems()).hasSize(1);
+        assertThat(newCart.getItems().getFirst().getQuantity()).isEqualTo(2);
     }
 
     @Test
@@ -45,6 +58,16 @@ class ShoppingCartTest {
         cart.removeItem(item1);
 
         assertThat(cart.getItems()).doesNotContain(item1);
+    }
+
+    @Test
+    void removeItem_doesNothing_ifItemNotInCart() {
+        List<Item> beforeChange = new ArrayList<>(cart.getItems());
+        Item newItem = new Item(100, 1);
+
+        cart.removeItem(newItem);
+
+        assertThat(cart.getItems()).hasSameSizeAs(beforeChange).containsExactlyElementsOf(beforeChange);
     }
 
     @Test
@@ -57,6 +80,13 @@ class ShoppingCartTest {
                         + item2.getPrice() * item2.getQuantity()
                         + item3.getPrice() * item3.getQuantity());
 
+    }
+
+    @Test
+    void calculatePrice_shouldReturnZero_ifCartIsEmpty() {
+        List<Item> emptyCart = new ArrayList<>();
+
+        assertThat(cart.calculateTotalPrice(emptyCart)).isZero();
     }
 
     @Test
