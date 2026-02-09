@@ -16,8 +16,9 @@ public class PaymentProcessor {
         this.paymentCredentials = paymentCredentials;
         this.emailService = emailService;
     }
+
     public boolean processPayment(double amount) {
-        if(amount <= 0) {
+        if (amount <= 0) {
             throw new IllegalArgumentException("Amount must be positive");
         }
 

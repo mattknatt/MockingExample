@@ -37,7 +37,7 @@ class PaymentProcessorTest {
     void shouldThrowException_ifAmountIsNegative() {
         double amount = -0.5;
 
-        assertThatThrownBy(() ->paymentProcessor.processPayment(amount))
+        assertThatThrownBy(() -> paymentProcessor.processPayment(amount))
                 .isInstanceOf(IllegalArgumentException.class).hasMessage("Amount must be positive");
     }
 
@@ -49,7 +49,7 @@ class PaymentProcessorTest {
     void shouldThrowException_ifAmountIsZero() {
         double amount = 0.0;
 
-        assertThatThrownBy(() ->paymentProcessor.processPayment(amount))
+        assertThatThrownBy(() -> paymentProcessor.processPayment(amount))
                 .isInstanceOf(IllegalArgumentException.class).hasMessage("Amount must be positive");
     }
 

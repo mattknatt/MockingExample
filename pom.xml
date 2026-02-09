@@ -64,9 +64,13 @@
                 <configuration>
                     <targetClasses>
                         <param>com.example.BookingSystem</param>
+                        <param>com.example.payment.PaymentProcessor</param>
+                        <param>com.example.shop.ShoppingCart</param>
                     </targetClasses>
                     <targetTests>
                         <param>com.example.BookingSystemTest</param>
+                        <param>com.example.payment.PaymentProcessorTest</param>
+                        <param>com.example.shop.ShoppingCartTest</param>
                     </targetTests>
                 </configuration>
                 <dependencies>
